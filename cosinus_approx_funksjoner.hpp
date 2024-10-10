@@ -160,6 +160,8 @@ double parse_varmeligning_x_t(const std::vector<Cosbølge>& approksimasjon, doub
 
 void cosinus_approximasjon_range(std::vector<Cosbølge>* approksimasjon_temp, const std::vector<double>* punkter, double start, double Len, int cos_start, int cos_slutt, char* finished)
 {
+    // denne er brukt til multithreading. se "cosinus approximasjon" for å lette forstå hva funksjonene gjør
+
     approksimasjon_temp->clear();
     approksimasjon_temp->reserve(cos_slutt - cos_start);
 
