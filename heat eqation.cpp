@@ -14,16 +14,11 @@ namespace plt = matplot;
 
 int main()
 {
-    /*figur1();
-    plt::cla();
+    figur1();
     figur2();
-    plt::cla();
     figur3();
-    plt::cla();
     figur4();
-    plt::cla();
     figur5();
-    plt::cla();*/
     figur6og7();
 
     return 0;
@@ -56,6 +51,8 @@ double f6(double x)
 
 
 void figur1() {
+    plt::cla();
+
 
     double x_start = 0;
     double x_slutt = 5;
@@ -113,6 +110,8 @@ void figur1() {
 
 void figur2()
 {
+    plt::cla();
+
     double x_start = 0;
     double x_slutt = 5;
     size_t x_num = 100;
@@ -140,6 +139,8 @@ void figur2()
 
 void figur3()
 {
+    plt::cla();
+    
     double x_start = -10;
     double x_slutt = 10;
     size_t x_num = 100000;
@@ -168,6 +169,8 @@ void figur3()
 
 void figur4()
 {
+    plt::cla();
+    
     double x_start = -10;
     double x_slutt = 10;
     size_t x_num = 100000;
@@ -202,6 +205,8 @@ void figur4()
 
 void figur5()
 {
+    plt::cla();
+
     double x_start = 0;
     double x_slutt = 5;
     size_t x_num = 11;
@@ -230,6 +235,8 @@ void figur5()
 
 void figur6og7()
 {
+    plt::cla();
+
     double x_start = -10;
     double x_slutt = 10;
     size_t x_num = 3'600'000;
@@ -244,11 +251,13 @@ void figur6og7()
 
     approksimasjon = cosinus_approximasjon_threaded(y_utregning, x_start, Len, 36'000);
 
-    std::vector<double> x = plt::linspace(-10, 10, 5000);
+    std::vector<double> x = plt::linspace(-10, 10, 10000);
     std::vector<double> y = plt::transform(x, [](double x) {return f6(x); });
     std::vector<double> y_approx = parse_approximation(approksimasjon, x);
 
+
     plt::hold(plt::on);
+    plt::title("Graf mot tilnærming");
     plt::plot(x, y)->display_name("Step-funksjonen");
     plt::plot(x, y_approx)->display_name("Cosinustilnærming");
     plt::legend();
