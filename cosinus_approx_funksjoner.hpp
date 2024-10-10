@@ -12,8 +12,14 @@
 struct Cosbølge {
     double amplitude;
     uint32_t frekvens;
-    double offset;
 };
+
+struct Cos_approkimasjon {
+    std::vector<Cosbølge> cosbølger;
+    double start;
+    double Len;
+};
+
 constexpr double PI = 3.14159265358979323846;
 
 double integral(double func(double), double start, double slutt, double delta)
@@ -25,7 +31,7 @@ double integral(double func(double), double start, double slutt, double delta)
     return sum;
 }
 
-double Cn(const std::vector<double>& verdier, double start, double Len, int n)
+double Cn(const std::vector<double>& verdier, double start, double Len, uint32_t n)
 {
     // antar at verdiene er jevnt fordelt over et tidsrom L, fra start til slutt
     // regner ut 2/Len * integral(verdier*cos(PI*n*x)*dx)
@@ -49,64 +55,66 @@ double Cn(const std::vector<double>& verdier, double start, double Len, int n)
     return sum;
 }
 
-std::vector<Cosbølge> cosinus_approximasjon(const std::vector<double>& punkter, double start, double Len, int antall_cos)
+Cos_approkimasjon cosinus_approximasjon(const std::vector<double>& punkter, double start, double Len, uint32_t antall_cos)
 {
     // "frekvens" betyr multippel av basisfrekvensen PI/Len. Hele cosinusfunksjonen må offsettes med startverdien, fordi de nye cosinusfunksjonene 
     // starter i x = 0
-    std::vector<Cosbølge> approksimasjon;
-    approksimasjon.reserve(antall_cos);
+
+    std::vector<Cosbølge> cosbølger;
+    cosbølger.reserve(antall_cos);
 
     for (int n = 0; n < antall_cos; ++n) {
         Cosbølge temp;
         temp.amplitude = Cn(punkter, start, Len, n);
         temp.frekvens = n;
-        temp.offset = start;
-        approksimasjon.push_back(temp);
+        cosbølger.push_back(temp);
     }
+
+    Cos_approkimasjon approksimasjon;
+    approksimasjon.cosbølger = std::move(cosbølger);
+    approksimasjon.Len = Len;
+    approksimasjon.start = start;
 
     return approksimasjon;
 }
 
-std::vector<double> parse_approximation(const std::vector<Cosbølge>& approksimasjon, const std::vector<double>& x)
+std::vector<double> parse_approximation(const Cos_approkimasjon& approksimasjon, const std::vector<double>& x)
 {
     std::vector<double> vals(x.size());
-    double Len = x.back() - x.front();
 
-    for (const Cosbølge& i : approksimasjon) {
+    for (const Cosbølge& i : approksimasjon.cosbølger) {
 
         double amplitude = i.amplitude;
         uint32_t frekvens = i.frekvens;
-        double offset = i.offset;
 
         for (int j = 0; j < x.size(); ++j) {
-            vals[j] += amplitude * cos(PI * (x[j] - offset) * frekvens / Len);
+            vals[j] += amplitude * cos(PI * (x[j] - approksimasjon.start) * frekvens / approksimasjon.Len);
         }
     }
 
     return vals;
 }
 
-void plot_decomposed(const matplot::axes_handle plotn, const std::vector<Cosbølge>& approksimasjon, const std::vector<double>& x, int n = 10, double threshold = 0.0)
+void plot_decomposed(const matplot::axes_handle plotn, const Cos_approkimasjon& approksimasjon, const std::vector<double>& x, uint32_t n, double threshold = 0.0)
 {
     //plotter hver enkelt multippel av basisfrekvensen for seg selv.
 
     std::vector<double> vals(x.size());
-    double Len = x.back() - x.front();
 
-    for (int i = 0; i < approksimasjon.size() && i < n; ++i) {
+    for (int i = 0; i < approksimasjon.cosbølger.size() && i < n; ++i) {
 
-        double amplitude = approksimasjon[i].amplitude;
-        uint32_t frekvens = approksimasjon[i].frekvens;
-        double offset = approksimasjon[i].offset;
+        double amplitude = approksimasjon.cosbølger[i].amplitude;
+        uint32_t frekvens = approksimasjon.cosbølger[i].frekvens;
 
         if (abs(amplitude) < threshold) {
             continue;
         }
 
         for (int j = 0; j < x.size(); ++j) {
-            vals[j] = amplitude * cos(PI * (x[j] - offset) * frekvens / Len);
+            vals[j] = amplitude * cos(PI * (x[j] - approksimasjon.start) * frekvens / approksimasjon.Len);
         }
-        if (plotn != 0) {
+
+        if (plotn != nullptr) {
             matplot::plot(plotn, x, vals)->line_width(1).display_name(std::to_string(frekvens));
         }
         else {
@@ -114,51 +122,48 @@ void plot_decomposed(const matplot::axes_handle plotn, const std::vector<Cosbøl
         }
     }
 }
-void plot_decomposed(const std::vector<Cosbølge>& approksimasjon, const std::vector<double>& x, int n = 10, double threshold = 0.0)
+void plot_decomposed(const Cos_approkimasjon& approksimasjon, const std::vector<double>& x, uint32_t n = 10, double threshold = 0.0)
 {
-    plot_decomposed(0, approksimasjon, x, n, threshold);
+    plot_decomposed(nullptr, approksimasjon, x, n, threshold);
 }
 
-std::vector<double> parse_varmeligning_t(const std::vector<Cosbølge>& approksimasjon, const std::vector<double>& x, double t, double heat_conductivity)
+std::vector<double> parse_varmeligning_t(const Cos_approkimasjon& approksimasjon, const std::vector<double>& x, double t, double heat_conductivity)
 {
     // hvordan varmefordelingen blir over "staven" etter "t" tid.
     std::vector<double> vals(x.size());
-    double Len = x.back() - x.front();
 
-    for (const Cosbølge& i : approksimasjon) {
+    for (const Cosbølge& i : approksimasjon.cosbølger) {
 
         double amplitude = i.amplitude;
         uint32_t frekvens = i.frekvens;
-        double offset = i.offset;
 
-        double omega = PI * frekvens / Len;
+        double omega = PI * frekvens / approksimasjon.Len;
 
         for (int j = 0; j < x.size(); ++j) {
-            vals[j] += amplitude * cos(omega * (x[j] - offset)) * std::exp(-heat_conductivity * omega * omega * t);
+            vals[j] += amplitude * cos(omega * (x[j] - approksimasjon.start)) * std::exp(-heat_conductivity * omega * omega * t);
         }
     }
 
     return vals;
 }
 
-double parse_varmeligning_x_t(const std::vector<Cosbølge>& approksimasjon, double Len, double x, double t, double heat_conductivity)
+double parse_varmeligning_x_t(const Cos_approkimasjon& approksimasjon, double x, double t, double heat_conductivity)
 {
     // hva varmen blir i et punkt etter t.
     double varme_punkt = 0;
-    for (const Cosbølge& i : approksimasjon) {
+    for (const Cosbølge& i : approksimasjon.cosbølger) {
 
         double amplitude = i.amplitude;
         uint32_t frekvens = i.frekvens;
-        double offset = i.offset;
 
-        double omega = PI * frekvens / Len;
+        double omega = PI * frekvens / approksimasjon.Len;
 
-        varme_punkt += amplitude * cos(omega * (x - offset)) * std::exp(-heat_conductivity * omega * omega * t);
+        varme_punkt += amplitude * cos(omega * (x - approksimasjon.start)) * std::exp(-heat_conductivity * omega * omega * t);
     }
     return varme_punkt;
 }
 
-void cosinus_approximasjon_range(std::vector<Cosbølge>* approksimasjon_temp, const std::vector<double>* punkter, double start, double Len, int cos_start, int cos_slutt, char* finished)
+void cosinus_approximasjon_range(std::vector<Cosbølge>* approksimasjon_temp, const std::vector<double>* punkter, double start, double Len, uint32_t cos_start, uint32_t cos_slutt, char* finished)
 {
     // denne er brukt til multithreading. se "cosinus approximasjon" for å lette forstå hva funksjonene gjør
 
@@ -169,14 +174,13 @@ void cosinus_approximasjon_range(std::vector<Cosbølge>* approksimasjon_temp, co
         Cosbølge temp;
         temp.amplitude = Cn(*punkter, start, Len, n);
         temp.frekvens = n;
-        temp.offset = start;
         approksimasjon_temp->push_back(temp);
     }
     *finished = true;
 }
 
 
-std::vector<Cosbølge> cosinus_approximasjon_threaded(const std::vector<double>& punkter, double start, double Len, int antall_cos)
+Cos_approkimasjon cosinus_approximasjon_threaded(const std::vector<double>& punkter, double start, double Len, uint32_t antall_cos)
 {
     // dette er en mutithreaded versjon av funksjonen "cosinus_approximasjon". Se den for å lettere forstå hva funksjonene gjør
 
@@ -184,8 +188,8 @@ std::vector<Cosbølge> cosinus_approximasjon_threaded(const std::vector<double>&
         return cosinus_approximasjon(punkter, start, Len, antall_cos);
     }
 
-    std::vector<Cosbølge> approksimasjon;
-    approksimasjon.reserve(antall_cos);
+    std::vector<Cosbølge> cosbølger;
+    cosbølger.reserve(antall_cos);
 
     int current_cos = 0;
 
@@ -213,7 +217,7 @@ std::vector<Cosbølge> cosinus_approximasjon_threaded(const std::vector<double>&
                     finished[i] = false;
                     threadpool[i].join();
                     for (int j = 0; j < thread_vector_return[i].size(); ++j) {
-                        approksimasjon.push_back(thread_vector_return[i][j]);
+                        cosbølger.push_back(thread_vector_return[i][j]);
                     }
                     if (current_cos + 1000 < antall_cos) {
                         threadpool[i] = std::thread{ cosinus_approximasjon_range, &(thread_vector_return[i]), &punkter, start, Len, current_cos,  current_cos + 1000, &(finished[i]) };
@@ -234,11 +238,16 @@ std::vector<Cosbølge> cosinus_approximasjon_threaded(const std::vector<double>&
         if (threadpool[i].joinable()) {
             threadpool[i].join();
             for (int j = 0; j < thread_vector_return[i].size(); ++j) {
-                approksimasjon.push_back(thread_vector_return[i][j]);
+                cosbølger.push_back(thread_vector_return[i][j]);
             }
         }
         
     }
     
+    Cos_approkimasjon approksimasjon;
+    approksimasjon.cosbølger = std::move(cosbølger);
+    approksimasjon.Len = Len;
+    approksimasjon.start = start;
+
     return approksimasjon;
 }

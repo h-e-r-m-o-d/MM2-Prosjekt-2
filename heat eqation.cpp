@@ -8,13 +8,13 @@ void figur2();
 void figur3();
 void figur4();
 void figur5();
-void figur6();
+void figur6og7();
 
 namespace plt = matplot;
 
 int main()
 {
-    figur1();
+    /*figur1();
     plt::cla();
     figur2();
     plt::cla();
@@ -23,8 +23,8 @@ int main()
     figur4();
     plt::cla();
     figur5();
-    plt::cla();
-    figur6();
+    plt::cla();*/
+    figur6og7();
 
     return 0;
 }
@@ -63,16 +63,16 @@ void figur1() {
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    std::vector<Cosbølge> cosbølger;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f1(x); });
 
-    approksimasjon = cosinus_approximasjon(y_utregning, x_start, Len, 10);
+    Cos_approkimasjon approksimajon = cosinus_approximasjon(y_utregning, x_start, Len, 10);
 
 
     std::vector<double> x = plt::linspace(x_start, x_slutt, 500);
     std::vector<double> y = plt::transform(x, [](double x) {return f1(x); });
-    std::vector<double> y_approx = parse_approximation(approksimasjon, x);
+    std::vector<double> y_approx = parse_approximation(approksimajon, x);
 
 
     /* plt::hold(plt::on);
@@ -86,7 +86,7 @@ void figur1() {
 
     plt::hold(plt::on);
     plt::title("Dekomponering av tilnærming");
-    plot_decomposed(approksimasjon, x, 10, 0);
+    plot_decomposed(approksimajon, x, 10);
     plt::legend()->title("Antall halve perioder");
     plt::show();
 
@@ -119,7 +119,7 @@ void figur2()
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    Cos_approkimasjon approksimasjon;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f2(x); });
 
@@ -146,7 +146,7 @@ void figur3()
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    Cos_approkimasjon approksimasjon;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f3(x); });
 
@@ -174,7 +174,7 @@ void figur4()
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    Cos_approkimasjon approksimasjon;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f3(x); });
 
@@ -184,11 +184,11 @@ void figur4()
     plt::title("Amplituder i tilnærming");
     std::vector<int> freq;
     std::vector<double> freq_amplitudes;
-    freq.reserve(approksimasjon.size());
-    freq_amplitudes.reserve(approksimasjon.size());
+    freq.reserve(approksimasjon.cosbølger.size());
+    freq_amplitudes.reserve(approksimasjon.cosbølger.size());
 
-    for (int i = 0; i < approksimasjon.size() && i < 60; ++i) {
-        Cosbølge& j = approksimasjon[i];
+    for (int i = 0; i < approksimasjon.cosbølger.size() && i < 60; ++i) {
+        Cosbølge& j = approksimasjon.cosbølger[i];
         freq.push_back(j.frekvens);
         freq_amplitudes.push_back(j.amplitude);
     }
@@ -208,7 +208,7 @@ void figur5()
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    Cos_approkimasjon approksimasjon;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f5(x); });
 
@@ -228,25 +228,37 @@ void figur5()
     plt::show();
 }
 
-void figur6()
+void figur6og7()
 {
     double x_start = -10;
     double x_slutt = 10;
-    size_t x_num = 2'400'000;
+    size_t x_num = 3'600'000;
 
     double Len = x_slutt - x_start;
 
-    std::vector<Cosbølge> approksimasjon;
+    Cos_approkimasjon approksimasjon;
     std::vector<double> x_utregning = plt::linspace(x_start, x_slutt, x_num);
     std::vector<double> y_utregning = plt::transform(x_utregning, [](double x) {return f6(x); });
 
 
 
-    approksimasjon = cosinus_approximasjon_threaded(y_utregning, x_start, Len, 24'000);
+    approksimasjon = cosinus_approximasjon_threaded(y_utregning, x_start, Len, 36'000);
+
+    std::vector<double> x = plt::linspace(-10, 10, 5000);
+    std::vector<double> y = plt::transform(x, [](double x) {return f6(x); });
+    std::vector<double> y_approx = parse_approximation(approksimasjon, x);
+
+    plt::hold(plt::on);
+    plt::plot(x, y)->display_name("Step-funksjonen");
+    plt::plot(x, y_approx)->display_name("Cosinustilnærming");
+    plt::legend();
+    plt::show();
+
+    plt::cla();
 
     auto [X, t] = plt::meshgrid(plt::linspace(x_start, x_slutt, 200), plt::linspace(0, 50, 25));
-    auto heat = plt::transform(X, t, [&approksimasjon, Len](double x, double t) {
-        return parse_varmeligning_x_t(approksimasjon, Len, x, t, 0.5);
+    auto heat = plt::transform(X, t, [&approksimasjon](double x, double t) {
+        return parse_varmeligning_x_t(approksimasjon, x, t, 0.5);
         });
 
     plt::surf(X, t, heat);
