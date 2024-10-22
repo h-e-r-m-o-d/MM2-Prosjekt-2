@@ -24,6 +24,7 @@
     <ProjectGuid>{5e8d66f3-e504-4c15-88ef-8c316cf78590}</ProjectGuid>
     <RootNamespace>heateqation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>fouriertransform</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,7 +133,11 @@
     <ClInclude Include="cosinus_approx_funksjoner.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="heat eqation.cpp" />
+    <ClCompile Include="fouriertransform.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="cell.wav" />
+    <Media Include="celloa.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
