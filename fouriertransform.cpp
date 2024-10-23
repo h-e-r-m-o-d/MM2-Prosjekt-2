@@ -8,6 +8,7 @@
 #include <fstream>
 
 constexpr double PI = 3.14159265359;
+namespace plt = matplot;
  
 std::vector<std::vector<double>> fourier_transform(AudioFile<double>& audiofile)
 {
@@ -29,7 +30,8 @@ std::vector<std::vector<double>> fourier_transform(AudioFile<double>& audiofile)
 
 void add_frequency(AudioFile<double> audiofile, std::vector<std::vector<double>>& fourier_transformed, double Hz, double amplitude)
 {
-    uint64_t index = 2 * Hz * audiofile.getSampleRate() / fourier_transformed[0].size();
+    uint64_t samplesize = fourier_transformed[0].size();
+    uint64_t index = 2 * Hz * samplesize / audiofile.getSampleRate();
 
     for (int i = 0; i < fourier_transformed.size(); ++i)
         fourier_transformed[i][index] = amplitude;
@@ -90,20 +92,45 @@ void inverse_fourier_transform(AudioFile<double>& audiofile, std::vector<std::ve
     }
 }
 
+void display_frequencies(AudioFile<double>& audiofile, std::vector<std::vector<double>>& fourier_transformed)
+{
+    double Hz_max = audiofile.getSampleRate() / 2;
+    std::vector<double> x = plt::linspace(0, Hz_max, fourier_transformed[0].size());
+    /*
+    std::vector<double>display_fft(channel_fourier_transform[0].size() / 100);
+    for (uint64_t i = 0; i < channel_fourier_transform[0].size() / 100; ++i) {
+        display_fft[i] = channel_fourier_transform[0][i * 100];
+    }
 
-namespace plt = matplot;
+    std::vector<double> x = plt::linspace(0, channel_fourier_transform[0].size() * 100 - 1, channel_fourier_transform[0].size());*/
+
+    plt::cla();
+
+    for (std::vector<double>& channel : fourier_transformed) {
+        plt::area(x, channel);
+    }
+    plt::show();
+}
+
+
+
 int main()
 {
     AudioFile<double> audiofile;
-    audiofile.load("cell_edit.wav");
-
+    audiofile.load("cell.wav");
+    std::cout << audiofile.getLengthInSeconds() << '\n';
     std::vector<std::vector<double>> channel_fourier_transform = fourier_transform(audiofile);
 
-    remove_frequency_over(audiofile, channel_fourier_transform, 12000);
+    //remove_frequency_over(audiofile, channel_fourier_transform, 12000);
+    add_frequency(audiofile, channel_fourier_transform, 12000, 1000);
+
+
+    display_frequencies(audiofile, channel_fourier_transform);
+    
 
     inverse_fourier_transform(audiofile, channel_fourier_transform);
 
-    audiofile.save("cell_fix.wav");
+    audiofile.save("cell_edit.wav");
 
     //std::vector<double> audio = audiofile.samples[0];
     /*
