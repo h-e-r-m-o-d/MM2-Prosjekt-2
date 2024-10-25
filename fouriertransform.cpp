@@ -105,10 +105,31 @@ void display_frequencies(AudioFile<double>& audiofile, std::vector<std::vector<d
     std::vector<double> x = plt::linspace(0, channel_fourier_transform[0].size() * 100 - 1, channel_fourier_transform[0].size());*/
 
     plt::cla();
-
+    plt::hold(plt::on);
     for (std::vector<double>& channel : fourier_transformed) {
         plt::area(x, channel);
     }
+    plt::show();
+}
+
+void display_frequencies(AudioFile<double>& audiofile, std::vector<std::vector<double>>& fourier_transformed, double threshold)
+{
+    plt::cla();
+    plt::hold(plt::on);
+    double Hz_max = audiofile.getSampleRate() / 2;
+    for (std::vector<double>& channel : fourier_transformed) {
+        std::vector<uint64_t> indexes;
+        for (uint64_t i = 0; i < channel.size(); ++i) {
+            if (abs(channel[i]) == threshold) {
+                indexes.push_back(i);
+            }
+        }//index = 2 * Hz * samplesize / audiofile.getSampleRate()
+            std::vector<double> x = plt::transform(x, [audiofile, channel](double index) {return index * audiofile.getSampleRate() / (channel.size() * 2); });
+            std::vector<double> displaying_freq = plt::transform(x, [&audiofile, &channel](double index) {return index*audiofile.getSampleRate() / (channel.size() * 2); });
+            plt::scatter(x, displaying_freq);
+    }
+
+
     plt::show();
 }
 
@@ -122,15 +143,32 @@ int main()
     std::vector<std::vector<double>> channel_fourier_transform = fourier_transform(audiofile);
 
     //remove_frequency_over(audiofile, channel_fourier_transform, 12000);
-    add_frequency(audiofile, channel_fourier_transform, 12000, 1000);
+    add_frequency(audiofile, channel_fourier_transform, 12000, 500);
+    add_frequency(audiofile, channel_fourier_transform, 12100, 500);
+    add_frequency(audiofile, channel_fourier_transform, 12200, 500);
+    add_frequency(audiofile, channel_fourier_transform, 500, 500);
+    add_frequency(audiofile, channel_fourier_transform, 510, 500);
+    add_frequency(audiofile, channel_fourier_transform, 520, 500);
 
-
-    display_frequencies(audiofile, channel_fourier_transform);
-    
+    display_frequencies(audiofile, channel_fourier_transform,200);
 
     inverse_fourier_transform(audiofile, channel_fourier_transform);
 
     audiofile.save("cell_edit.wav");
+
+
+    audiofile.load("cell_edit.wav");
+    std::cout << audiofile.getLengthInSeconds() << '\n';
+    channel_fourier_transform = fourier_transform(audiofile);
+
+    //remove_frequency_over(audiofile, channel_fourier_transform, 12000);
+    remove_frequency_over(audiofile, channel_fourier_transform, 11500);
+
+    //display_frequencies(audiofile, channel_fourier_transform);
+
+    inverse_fourier_transform(audiofile, channel_fourier_transform);
+
+    audiofile.save("cell_fix.wav");
 
     //std::vector<double> audio = audiofile.samples[0];
     /*
