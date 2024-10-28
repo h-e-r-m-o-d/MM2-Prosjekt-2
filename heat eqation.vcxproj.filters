@@ -18,18 +18,13 @@
     <ClInclude Include="cosinus_approx_funksjoner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fourier_transform_hjelpefunksjoner.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fouriertransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="cell.wav">
-      <Filter>Resource Files</Filter>
-    </Media>
-    <Media Include="celloa.wav">
-      <Filter>Resource Files</Filter>
-    </Media>
   </ItemGroup>
 </Project>

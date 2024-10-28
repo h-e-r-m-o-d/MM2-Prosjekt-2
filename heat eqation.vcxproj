@@ -131,13 +131,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cosinus_approx_funksjoner.hpp" />
+    <ClInclude Include="fourier_transform_hjelpefunksjoner.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fouriertransform.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="cell.wav" />
-    <Media Include="celloa.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
