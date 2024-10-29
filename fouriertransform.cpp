@@ -24,12 +24,15 @@ int main()
     //add_frequency(lyd, 510, 500);
     //add_frequency(lyd, 520, 500);
 
-    //display_frequencies(lyd);
+    display_frequencies_cutoff(lyd, 15000);
     
     //remove_frequency_range(lyd, 150, 270);
-    remove_frequency_range(lyd, 6600,8000);
+    remove_frequency_range(lyd, 6600,7100);
+
+    display_frequencies_cutoff(lyd,15000);
 
     inverse_fourier_transform(lyd);
+    
 
     lyd.save("lyd_edit.wav");
 
