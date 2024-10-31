@@ -296,3 +296,58 @@ void display_frequencies_cutoff(Audio& audio_struct, double Hz_cutoff)
 {
     display_frequencies_cutoff(audio_struct.file, audio_struct.channels_fourier_transform, Hz_cutoff);
 }
+
+
+
+
+// ingen av disse komprimerer egentlig :)
+void komprimere(AudioFile<double>& audiofile, std::vector<std::vector<double>>& fourier_transformed, double percent)
+{
+    const uint64_t samplesize = audiofile.samples[0].size();
+    const uint64_t start_index = percent / 100 * samplesize;
+
+    for (std::vector<double>& channel : fourier_transformed) {
+        for (uint64_t i = start_index; i < channel.size() - 1; i += 2) {
+            channel[i] += channel[i + 1];
+            channel[i] /= 2;
+            channel[i + 1] = 0;
+        }
+    }
+}
+void komprimere(Audio& audio_struct, double percent)
+{
+    komprimere(audio_struct.file ,audio_struct.channels_fourier_transform, percent);
+}
+
+
+//denne bare setter ned samplingraten
+void komprimere2(AudioFile<double>& audiofile, std::vector<std::vector<double>>& fourier_transformed, double percent)
+{
+    const uint64_t samplesize = audiofile.samples[0].size();
+    const uint64_t end_index = percent / 100 * samplesize;
+
+    std::vector<std::vector<double>> new_vec;
+    new_vec.reserve(fourier_transformed.size());
+
+    for (std::vector<double>& channel : fourier_transformed) {
+        std::vector<double> temp;
+        temp.reserve(end_index);
+        for (uint64_t i = 0; i < end_index; i += 1) {
+            temp.push_back(channel[i]);
+            //channel[i] += channel[i + 1];
+            //channel[i] /= 2;
+            //channel[i] = 0;
+            //channel[i + 1] = 0;
+        }
+        new_vec.push_back(temp);
+        channel.resize(end_index);
+    }
+    
+    audiofile.samples = std::move(new_vec);
+    audiofile.setSampleRate(audiofile.getSampleRate() * percent / 100);
+}
+
+void komprimere2(Audio& audio_struct, double percent)
+{
+    komprimere2(audio_struct.file, audio_struct.channels_fourier_transform, percent);
+}
